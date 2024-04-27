@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\Statistic;
 use App\Models\Task;
 
 class TaskRepository
@@ -9,26 +10,31 @@ class TaskRepository
 
     public function getList()
     {
-        return Task::paginate(10);
+        return Task::orderBy('created_at', 'desc')->paginate(10);
     }
 
     public function create(array $data)
     {
-        dd($data);
-        Task::create($data);
+        $task = [
+            'title' => $data['title'],
+            'description' => $data['description'],
+            'assigned_to_id' => $data['assigned_to'],
+            'assigned_by_id' => $data['assigned_by'],
+        ];
 
-        // Update statistics table
-        $assignedTasksCount = $this->totalTaskCount($data->assigned_to_id);
-        //$statistics = Statistics::updateOrCreate(
-        //    ['user_id' => $request->assigned_to_id],
-        //    ['task_count' => $assignedTasksCount]
-        //);
+        Task::create($task);
+
+        $assignedTasksCount = $this->totalTaskCount($data['assigned_to']);
+        Statistic::updateOrCreate(
+            ['user_id' => $data['assigned_to']],
+            ['task_count' => $assignedTasksCount]
+        );
 
     }
 
-    private function totalTaskCount($assigned_to_id)
+    private function totalTaskCount($assignedToId)
     {
-        return Task::where('assigned_to_id', $assigned_to_id)->count();
+        return Task::where('assigned_to_id', $assignedToId)->count();
     }
 
     public function getDetail(int $id)
