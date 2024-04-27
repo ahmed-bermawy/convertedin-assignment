@@ -2,18 +2,24 @@
 
 namespace App\Repositories;
 
-use App\Models\Statistic;
+use App\Jobs\UpdateTaskCountJob;
 use App\Models\Task;
 
 class TaskRepository
 {
+    private StatisticRepository $statisticRepository;
+
+    public function __construct(StatisticRepository $statisticRepository)
+    {
+        $this->statisticRepository = $statisticRepository;
+    }
 
     public function getList()
     {
         return Task::orderBy('created_at', 'desc')->paginate(10);
     }
 
-    public function create(array $data)
+    public function create(array $data): void
     {
         $task = [
             'title' => $data['title'],
@@ -24,37 +30,11 @@ class TaskRepository
 
         Task::create($task);
 
-        $assignedTasksCount = $this->totalTaskCount($data['assigned_to']);
-        Statistic::updateOrCreate(
-            ['user_id' => $data['assigned_to']],
-            ['task_count' => $assignedTasksCount]
-        );
-
+        UpdateTaskCountJob::dispatch($data['assigned_to'], $this, $this->statisticRepository);
     }
 
-    private function totalTaskCount($assignedToId)
+    public function totalTaskCount($assignedToId)
     {
         return Task::where('assigned_to_id', $assignedToId)->count();
-    }
-
-    public function getDetail(int $id)
-    {
-        return Task::find($id);
-    }
-
-    public function update(array $data, int $id)
-    {
-        $task = Task::find($id);
-        $task->update($data);
-
-        return $task;
-    }
-
-    public function delete(int $id)
-    {
-        $task = Task::find($id);
-        $task->delete();
-
-        return $task;
     }
 }
