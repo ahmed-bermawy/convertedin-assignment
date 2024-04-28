@@ -27,3 +27,7 @@
 8. To seed database run `docker-compose exec convertedin-assignment php artisan db:seed`
 9. After installation is finished you can access the application on `http://localhost:8010/`
 
+## GitHub Actions
+
+1. The project is integrated with Github Actions to run the tests on every push to the repository
+2. The workflow file is located in `.github/workflows/code-check.yml`
