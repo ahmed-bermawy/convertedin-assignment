@@ -1,0 +1,60 @@
+version: "3.7"
+services:
+    app:
+        container_name: convertedin-assignment
+        restart: always
+        build:
+            args:
+                user: ahmed
+                uid: 1000
+            context: .
+            dockerfile: Dockerfile
+        working_dir: /var/www/html
+        volumes:
+            - .:/var/www/html
+        networks:
+            - app-network
+        depends_on:
+            - db
+        env_file:
+            - ./docker-config/.env_docker
+
+    nginx:
+        image: nginx:alpine
+        container_name: convertedin-assignment-nginx
+        ports:
+            - "8010:80"
+        depends_on:
+            - app
+            - db
+        volumes:
+            - ./:/var/www/html
+            - ./docker-config/nginx:/etc/nginx/conf.d/
+        networks:
+            - app-network
+
+    db:
+        image: mysql:8.0
+        container_name: convertedin-assignment-mysql
+        restart: unless-stopped
+        command: [ "--secure-file-priv=/var/lib/mysql-files" ]
+        environment:
+            MYSQL_DATABASE: laravel
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_USER: laravel
+            MYSQL_PASSWORD: laravel
+        ports:
+            - "3305:3306"
+        volumes:
+            - ./docker-config/mysql/db-data:/var/lib/mysql
+            - ./docker-config/mysql/my.cnf:/etc/mysql/my.cnf
+            - ./docker-config/mysql/mysql-files:/var/lib/mysql-files
+        networks:
+            - app-network
+volumes:
+    db-data:
+        driver: local
+
+networks:
+    app-network:
+        driver: bridge
