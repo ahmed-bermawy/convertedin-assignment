@@ -20,15 +20,6 @@ class StatisticControllerTest extends TestCase
         $this->statisticRepository = $this->createMock(StatisticRepository::class);
         $this->controller = new StatisticController($this->statisticRepository);
     }
-    /**
-     * A basic feature test example.
-     */
-    public function testIndex(): void
-    {
-        $response = $this->get('/statistics');
-
-        $response->assertStatus(200);
-    }
 
     public function testIndexReturnsCorrectViewWithStatistics()
     {

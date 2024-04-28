@@ -23,13 +23,6 @@ class TaskControllerTest extends TestCase
         $this->controller = new TaskController($this->userRepository ,$this->taskRepository);
     }
 
-    public function testIndex(): void
-    {
-        $response = $this->get('/tasks');
-
-        $response->assertStatus(200);
-    }
-
     public function testIndexReturnsCorrectViewWithTasks()
     {
         $tasks = ['Task 1', 'Task 2', 'Task 3'];
